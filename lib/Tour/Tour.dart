@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mn_641463021/Login/Login.dart';
 import 'package:mn_641463021/Tour/AddTour.dart';
+import 'package:mn_641463021/Tour/TourD.dart';
 import 'package:mn_641463021/Tour/UpdateTour.dart';
 import 'package:mn_641463021/menu.dart';
 
@@ -22,13 +23,23 @@ class _TouristattractionsState extends State<Touristattractions> {
     fetchAttractions();
   }
 
+  void _navigateToDetail(Map<String, dynamic> attraction) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => TouristAttractionDetailPage(data: attraction),
+    ),
+  );
+}
+
   Future<void> fetchAttractions() async {
     final response = await http.get(
         Uri.parse("http://localhost:8081/mn_641463021/Touristattractions/"));
 
     if (response.statusCode == 200) {
       setState(() {
-        attractions = List<Map<String, dynamic>>.from(json.decode(response.body));
+        attractions =
+            List<Map<String, dynamic>>.from(json.decode(response.body));
       });
     } else {
       print('Failed to load attractions. Error ${response.statusCode}');
@@ -67,6 +78,8 @@ class _TouristattractionsState extends State<Touristattractions> {
                 child: DataTable(
                   sortColumnIndex: _currentSortColumnIndex,
                   sortAscending: _isSortAscending,
+                  columnSpacing:
+                      10, // เพิ่ม property นี้เพื่อกำหนดระยะห่างระหว่างคอลัมน์
                   columns: [
                     DataColumn(
                       label: Text('ชื่อสถานที่'),
@@ -74,10 +87,15 @@ class _TouristattractionsState extends State<Touristattractions> {
                         _sort(columnIndex);
                       },
                     ),
-                    DataColumn(label: Text('ละติจูด')),
-                    DataColumn(label: Text('ลองจิจูด')),
-                    DataColumn(label: Text('แก้ไข')),
-                    DataColumn(label: Text('ลบ')),
+                    DataColumn(
+                      label: Text('เพิ่มเติม'),
+                    ),
+                    DataColumn(
+                      label: Text('แก้ไข'),
+                    ),
+                    DataColumn(
+                      label: Text('ลบ'),
+                    ),
                   ],
                   rows: _createRows(),
                 ),
@@ -91,40 +109,39 @@ class _TouristattractionsState extends State<Touristattractions> {
           child: Icon(Icons.add),
         ),
         bottomNavigationBar: BottomAppBar(
-        color: Colors.blue,
-        elevation: 10,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            IconButton(
-              icon: Icon(Icons.menu_rounded),
-              color: Colors.white,
-              onPressed: () {
-                Navigator.of(context).pushReplacement(
+          color: Colors.blue,
+          elevation: 10,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              IconButton(
+                icon: Icon(Icons.menu_rounded),
+                color: Colors.white,
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => Menu()),
                   );
-              },
-            ),
-            
-            IconButton(
-              icon: Icon(Icons.account_circle),
-              color: Colors.white,
-              onPressed: () {
-                // Add action to manage user info
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.logout),
-              color: Colors.white,
-              onPressed: () {
-                Navigator.of(context).pushReplacement(
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.account_circle),
+                color: Colors.white,
+                onPressed: () {
+                  // Add action to manage user info
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.logout),
+                color: Colors.white,
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => LoginPage()),
                   );
-              },
-            ),
-          ],
+                },
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -138,8 +155,14 @@ class _TouristattractionsState extends State<Touristattractions> {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
-        DataCell(Text(attraction['Latitude'])),
-        DataCell(Text(attraction['Longitude'])),
+        DataCell(
+          IconButton(
+  icon: Icon(Icons.preview),
+  onPressed: () {
+    _navigateToDetail(attraction);
+  },
+),
+        ),
         DataCell(
           IconButton(
             icon: Icon(Icons.edit),
@@ -154,7 +177,8 @@ class _TouristattractionsState extends State<Touristattractions> {
             icon: Icon(Icons.delete),
             onPressed: () {
               // Call delete function here
-              _deleteAttraction(int.parse(attraction['AttractionID'].toString()));
+              _deleteAttraction(
+                  int.parse(attraction['AttractionID'].toString()));
             },
           ),
         ),

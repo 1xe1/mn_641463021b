@@ -59,7 +59,7 @@ class _GPSTrackingState extends State<GPSTracking> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'GPS',
+          'แผนที่ท่องเที่ยว',
           style: TextStyle(
             fontSize: 24.0,
             fontWeight: FontWeight.bold,

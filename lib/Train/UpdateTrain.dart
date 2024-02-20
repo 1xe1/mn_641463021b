@@ -5,18 +5,17 @@ import 'dart:convert';
 
 import 'package:mn_641463021/menu.dart';
 
-class UpdateRoute extends StatefulWidget {
-  final Map<String, dynamic> route;
+class UpdateTrain extends StatefulWidget {
+  final Map<String, dynamic> train;
 
-  UpdateRoute({required this.route});
+  UpdateTrain({required this.train});
 
   @override
-  _UpdateRouteState createState() => _UpdateRouteState();
+  _UpdateTrainState createState() => _UpdateTrainState();
 }
 
-class _UpdateRouteState extends State<UpdateRoute> {
-  final TextEditingController _attractionIDController = TextEditingController();
-  TimeOfDay _selectedTime = TimeOfDay.now(); // Add default time
+class _UpdateTrainState extends State<UpdateTrain> {
+  final TextEditingController _trainNumberController = TextEditingController();
 
   @override
   void initState() {
@@ -25,37 +24,35 @@ class _UpdateRouteState extends State<UpdateRoute> {
   }
 
   void _initializeFields() {
-    _attractionIDController.text = widget.route['AttractionID'];
-    // Parse time string to TimeOfDay
-    List<String> timeComponents = widget.route['Time'].split(':');
-    int hour = int.parse(timeComponents[0]);
-    int minute = int.parse(timeComponents[1]);
-    _selectedTime = TimeOfDay(hour: hour, minute: minute);
+    _trainNumberController.text = widget.train['TrainNumber'];
   }
 
   Future<void> submitForm(BuildContext context) async {
-    final String attractionID = _attractionIDController.text;
+    // Validate input fields (omitted for brevity)
+
+    final String trainNumber = _trainNumberController.text;
 
     try {
-      final String apiUrl = "http://localhost:8081/mn_641463021/Route/";
+      final String apiUrl = "http://localhost:8081/mn_641463021/Train/";
       final response = await http.put(
         Uri.parse(apiUrl),
         body: jsonEncode({
-          'RouteID': widget.route['RouteID'],
-          'AttractionID': attractionID,
-          'Time': '${_selectedTime.hour}:${_selectedTime.minute}', // Convert TimeOfDay to string
+          'TrainID': widget.train['TrainID'],
+          'TrainNumber': trainNumber,
         }),
       );
       if (response.statusCode == 200) {
+        // Handle success, e.g., show a success message or navigate back
         Navigator.pop(context);
       } else {
+        // Handle error, e.g., show an error message
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
               title: Text("Error"),
               content: Text(
-                  "Failed to update route. Error ${response.statusCode}"),
+                  "Failed to update train. Error ${response.statusCode}"),
               actions: <Widget>[
                 TextButton(
                   child: Text("OK"),
@@ -69,6 +66,7 @@ class _UpdateRouteState extends State<UpdateRoute> {
         );
       }
     } catch (e) {
+      // Handle other exceptions
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -89,24 +87,12 @@ class _UpdateRouteState extends State<UpdateRoute> {
     }
   }
 
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: _selectedTime,
-    );
-    if (picked != null && picked != _selectedTime) {
-      setState(() {
-        _selectedTime = picked;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Update Route',
+          'Update Train',
           style: TextStyle(
             fontSize: 20.0,
             fontWeight: FontWeight.bold,
@@ -128,16 +114,8 @@ class _UpdateRouteState extends State<UpdateRoute> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextField(
-                controller: _attractionIDController,
-                decoration: InputDecoration(labelText: 'Attraction ID'),
-              ),
-              SizedBox(height: 16.0),
-              ListTile(
-                title: Text('Time'),
-                subtitle: Text('${_selectedTime.hour}:${_selectedTime.minute}'),
-                onTap: () {
-                  _selectTime(context);
-                },
+                controller: _trainNumberController,
+                decoration: InputDecoration(labelText: 'Train Number'),
               ),
               SizedBox(height: 16.0),
               ElevatedButton(
@@ -160,7 +138,7 @@ class _UpdateRouteState extends State<UpdateRoute> {
               icon: Icon(Icons.menu_rounded),
               color: Colors.white,
               onPressed: () {
-                Navigator.of(context).pushReplacement(  
+                Navigator.of(context).pushReplacement(
                   MaterialPageRoute(builder: (context) => Menu()),
                 );
               },

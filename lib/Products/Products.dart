@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mn_641463021/Login/Login.dart';
 import 'package:mn_641463021/Products/AddProduct.dart';
+import 'package:mn_641463021/Products/ProductsD.dart';
 import 'package:mn_641463021/Products/UpdateProduct.dart';
 import 'package:mn_641463021/menu.dart';
 
@@ -45,6 +46,14 @@ class _ProductsState extends State<Products> {
       fetchProducts();
     });
   }
+  void _navigateToDetail(Map<String, dynamic> product) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ProductDetailPage(product: product), // Corrected parameter name to 'shop'
+    ),
+  );
+}
 
   void _navigateToEditProduct(Map<String, dynamic> product) {
   Navigator.push(
@@ -161,16 +170,17 @@ Future<void> _deleteProduct(int productID) async {
                 child: DataTable(
                   sortColumnIndex: _currentSortColumnIndex,
                   sortAscending: _isSortAscending,
+                  columnSpacing:
+                      10, 
                   columns: [
                     DataColumn(
                       label: Text('ชื่อสินค้า'),
-                      onSort: (columnIndex, _) {
-                        _sort(columnIndex);
-                      },
+                      // onSort: (columnIndex, _) {
+                      //   _sort(columnIndex);
+                      // },
                     ),
-                    DataColumn(label: Text('ชื่อร้านค้า')),
-                    DataColumn(label: Text('หน่วย')),
                     DataColumn(label: Text('ราคา')),
+                    DataColumn(label: Text('เพิ่มเติม')),
                     DataColumn(label: Text('แก้ไข')),
                     DataColumn(label: Text('ลบ')),
                   ],
@@ -233,9 +243,16 @@ Future<void> _deleteProduct(int productID) async {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
-        DataCell(Text(product['ShopName'])),
-        DataCell(Text(product['Unit'].toString())),
         DataCell(Text(product['Price'].toString())),
+        DataCell(
+          IconButton(
+            icon: Icon(Icons.preview),
+            onPressed: () {
+              // Navigate to edit page and pass product data
+              _navigateToDetail(product);
+            },
+          ),
+        ),
         DataCell(
           IconButton(
             icon: Icon(Icons.edit),
@@ -256,30 +273,5 @@ Future<void> _deleteProduct(int productID) async {
         ),
       ]);
     }).toList();
-  }
-
-  void _sort(int columnIndex) {
-    if (columnIndex == _currentSortColumnIndex) {
-      setState(() {
-        _isSortAscending = !_isSortAscending;
-      });
-    } else {
-      setState(() {
-        _currentSortColumnIndex = columnIndex;
-        _isSortAscending = true;
-      });
-    }
-
-    products.sort((a, b) {
-      if (_isSortAscending) {
-        return a.values
-            .elementAt(columnIndex)
-            .compareTo(b.values.elementAt(columnIndex));
-      } else {
-        return b.values
-            .elementAt(columnIndex)
-            .compareTo(a.values.elementAt(columnIndex));
-      }
-    });
   }
 }

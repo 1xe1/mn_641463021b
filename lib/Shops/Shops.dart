@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mn_641463021/Login/Login.dart';
 import 'package:mn_641463021/Shops/AddShop.dart';
+import 'package:mn_641463021/Shops/ShopD.dart';
 import 'package:mn_641463021/Shops/UpdateShop.dart';
 import 'package:mn_641463021/menu.dart';
 
@@ -35,6 +36,7 @@ class _ShopsState extends State<Shops> {
       print('Failed to load shops. Error ${response.statusCode}');
     }
   }
+
   void navigateToAdd() {
     Navigator.push(
       context,
@@ -45,6 +47,16 @@ class _ShopsState extends State<Shops> {
       fetchShops();
     });
   }
+
+  void _navigateToDetail(Map<String, dynamic> shop) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ShopDetailPage(shop: shop), // Corrected parameter name to 'shop'
+    ),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -78,13 +90,12 @@ class _ShopsState extends State<Shops> {
                 child: DataTable(
                   sortColumnIndex: _currentSortColumnIndex,
                   sortAscending: _isSortAscending,
+                  columnSpacing: 10,
                   columns: [
                     DataColumn(
                       label: Text('ชื่อร้านค้า'),
-                      onSort: (columnIndex, _) {
-                        _sort(columnIndex);
-                      },
                     ),
+                    DataColumn(label: Text('เพิ่มเติม')),
                     DataColumn(label: Text('แก้ไข')),
                     DataColumn(label: Text('ลบ')),
                   ],
@@ -148,10 +159,17 @@ class _ShopsState extends State<Shops> {
         ),
         DataCell(
           IconButton(
+            icon: Icon(Icons.preview),
+            onPressed: () {
+              _navigateToDetail(shop); // Navigate to detail page
+            },
+          ),
+        ),
+        DataCell(
+          IconButton(
             icon: Icon(Icons.edit),
             onPressed: () {
-              // Navigate to edit page and pass shop data
-              _navigateToEdit(shop);
+              _navigateToEdit(shop); // Navigate to edit page
             },
           ),
         ),
@@ -159,9 +177,7 @@ class _ShopsState extends State<Shops> {
           IconButton(
             icon: Icon(Icons.delete),
             onPressed: () {
-              // Call delete function here
-              _deleteShop(int.parse(shop['ShopID'].toString()));
-              
+              _deleteShop(int.parse(shop['ShopID'].toString())); // Delete shop
             },
           ),
         ),
@@ -169,111 +185,82 @@ class _ShopsState extends State<Shops> {
     }).toList();
   }
 
-  void _sort(int columnIndex) {
-    if (columnIndex == _currentSortColumnIndex) {
-      setState(() {
-        _isSortAscending = !_isSortAscending;
-      });
-    } else {
-      setState(() {
-        _currentSortColumnIndex = columnIndex;
-        _isSortAscending = true;
-      });
-    }
-
-    shops.sort((a, b) {
-      if (_isSortAscending) {
-        return a.values
-            .elementAt(columnIndex)
-            .compareTo(b.values.elementAt(columnIndex));
-      } else {
-        return b.values
-            .elementAt(columnIndex)
-            .compareTo(a.values.elementAt(columnIndex));
-      }
-    });
-  }
   Future<void> _deleteShop(int shopID) async {
-  try {
-    final response = await http.delete(
-      Uri.parse('http://localhost:8081/mn_641463021/Shop/'),
-      body: json.encode({'ShopID': shopID}),
-    );
+    try {
+      final response = await http.delete(
+        Uri.parse('http://localhost:8081/mn_641463021/Shop/'),
+        body: json.encode({'ShopID': shopID}),
+      );
 
-    if (response.statusCode == 200) {
-      // Shop deleted successfully, update UI or show a message
-      fetchShops(); // Refresh shops list after deletion
-      // Show success message
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text(
-              "Success",
-              style: TextStyle(
-                color: Colors.green, // Set text color to green for success
-              ),
-            ),
-            content: Text(
-              "ลบร้านเรียบร้อย",
-              style: TextStyle(
-                fontSize: 18.0, // Increase font size for better readability
-              ),
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: Text(
-                  "OK",
-                  style: TextStyle(
-                    color: Colors.green, // Match text color with title for consistency
-                    fontSize: 16.0, // Match font size with content for consistency
-                  ),
+      if (response.statusCode == 200) {
+        fetchShops(); // Refresh shops list after deletion
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(
+                "Success",
+                style: TextStyle(
+                  color: Colors.green,
                 ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
               ),
-            ],
-          );
-        },
-      );
-    } else {
-      // Failed to delete shop, handle error
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Error"),
-            content: Text(
-              "Failed to delete shop. Error ${response.statusCode}",
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: Text("OK"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
+              content: Text(
+                "ลบร้านเรียบร้อย",
+                style: TextStyle(
+                  fontSize: 18.0,
+                ),
               ),
-            ],
-          );
-        },
-      );
+              actions: <Widget>[
+                TextButton(
+                  child: Text(
+                    "OK",
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 16.0,
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("Error"),
+              content: Text(
+                "Failed to delete shop. Error ${response.statusCode}",
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: Text("OK"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } catch (e) {
+      print('Error: $e');
     }
-  } catch (e) {
-    // Handle any exceptions
-    print('Error: $e');
   }
-}
-void _navigateToEdit(Map<String, dynamic> shop) {
+
+  void _navigateToEdit(Map<String, dynamic> shop) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => UpdateShop(shop: shop),
       ),
     ).then((_) {
-      fetchShops(); // Call fetchAttractions() when updating is completed
+      fetchShops();
     });
   }
-
 }
-

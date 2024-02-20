@@ -33,8 +33,8 @@ switch ($method) {
 function getRoutes() {
     global $conn;
 
-    // $sql = "SELECT route.RouteID, route.AttractionID,route.AttractionID, touristattractions.AttractionName, route.Time FROM route JOIN touristattractions ON route.AttractionID = touristattractions.AttractionID WHERE route.statusDelete = 0";
-    $sql = "SELECT * FROM route WHERE route.statusDelete = 0";
+    $sql = "SELECT route.RouteID, route.AttractionID,route.AttractionID, touristattractions.AttractionName, route.Time FROM route JOIN touristattractions ON route.AttractionID = touristattractions.AttractionID WHERE route.statusDelete = 0";
+    // $sql = "SELECT * FROM route WHERE route.statusDelete = 0";
     $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {
